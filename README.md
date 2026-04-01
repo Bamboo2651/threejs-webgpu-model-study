@@ -9,8 +9,8 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 ## 学習トピック
 
 ### WebGPURenderer
-- [ ] WebGPURenderer の基本的な使い方
-- [ ] WebGLRenderer との違い
+- [x] WebGPURenderer の基本的な使い方
+- [x] WebGLRenderer との違い
 
 ### GLTFLoader
 - [ ] GLBファイルの読み込み
@@ -38,6 +38,49 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 
 ### WebGPURenderer
 
+`three/webgpu` からインポートして使う。WebGLRenderer との最大の違いは **初期化が非同期である**こと。
+`await renderer.init()` を呼ばないと、GPU の準備が整う前にレンダリングが始まってしまう。
+そのため、セットアップ処理全体を `async function` で包む必要がある。
+```js
+async function init() {
+  const renderer = new THREE.WebGPURenderer({ antialias: true });
+  await renderer.init(); // GPU初期化を待つ
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement); // canvasをbodyに追加
+}
+init();
+```
+
+**`renderer.domElement` について**
+Three.js のレンダラーは内部で `<canvas>` 要素を自動生成する。
+`renderer.domElement` はその canvas への参照で、`appendChild` で HTML の body に追加することで画面に表示される。
+
+**リサイズ対応について**
+ウィンドウサイズが変わったとき、カメラと canvas の両方を更新する必要がある。
+```js
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight; // アスペクト比を更新
+  camera.updateProjectionMatrix();                        // 内部計算を作り直す（必須）
+  renderer.setSize(window.innerWidth, window.innerHeight); // canvasサイズを更新
+});
+```
+
+`camera.aspect` を変えただけでは反映されない。必ず `updateProjectionMatrix()` とセットで呼ぶ。
+
+### PerspectiveCamera
+```js
+new THREE.PerspectiveCamera(fov, aspect, near, far)
+```
+
+| 引数 | 意味 | 今回の値 |
+|------|------|----------|
+| fov | 縦方向の視野角（度） | `60` |
+| aspect | アスペクト比（横÷縦） | `window.innerWidth / window.innerHeight` |
+| near | これより近いものは描画しない | `0.1` |
+| far | これより遠いものは描画しない | `100` |
+
+near と far で描画範囲を絞ることで GPU の負荷を抑えられる。
+広いシーン（湖など）では `far` の値を大きくする必要がある。
 
 ### GLTFLoader
 
