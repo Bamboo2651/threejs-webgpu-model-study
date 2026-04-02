@@ -38,6 +38,23 @@ async function init() {
     // gltf2.scene.rotation.z = -0.5;
     // gltf3.scene.rotation.z = 0.5;
     gltf.scene.position.set(0, -1, 0);
+
+
+    const crystalMaterial = new THREE.MeshStandardMaterial({
+        color: 0x88ccff,
+        roughness: 0.4,
+        metalness: 2.9,
+        transparent: true,
+        opacity: 1,
+        emissive: 0x2244ff,
+        emissiveIntensity: 7,
+    });
+
+    gltf.scene.traverse((child) => {
+        if (child.isMesh) {
+            child.material = crystalMaterial;
+        }
+    });
     scene.add(gltf.scene, gltf2.scene, gltf3.scene);
 
     window.addEventListener('resize', () => {
@@ -46,7 +63,7 @@ async function init() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
     renderer.setAnimationLoop(() => {
-        gltf.scene.rotation.y += 0.03;
+        gltf.scene.rotation.y += 0.02;
         // gltf2.scene.rotation.y += 0.01;
         // gltf2.scene.rotation.z += 0.01;
         // gltf.rotation.y += 0.01;
