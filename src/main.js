@@ -16,7 +16,7 @@ async function init() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0);
     dirLight.position.set(5, 10, 5);
     scene.add(dirLight);
 
@@ -49,10 +49,10 @@ async function init() {
 
     const crystalMaterial = new THREE.MeshStandardMaterial({
         color: 0x88ccff,
-        roughness: 0.4,
-        metalness: 2.9,
+        roughness: 0.1,
+        metalness: 3,
         transparent: true,
-        opacity: 1,
+        opacity: 0.1,
         emissive: 0x2244ff,
         emissiveIntensity: 7,
     });
