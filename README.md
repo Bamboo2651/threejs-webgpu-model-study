@@ -167,6 +167,7 @@ const pmremGenerator = new THREE.PMREMGenerator(renderer);
 scene.environment = pmremGenerator.fromScene(environment).texture;
 pmremGenerator.dispose();
 ```
+![alt text](image-1.png)
 
 
 
