@@ -127,7 +127,7 @@ gltf.scene.rotation.z = -30 * (Math.PI / 180);
 `scale` や `rotation` は Vector3 オブジェクトなので `= 0.2` のように直接代入できない。
 必ず `scale.set()` か `scale.x = 0.2` のように使う。
 
-
+![alt text](image.png)
 ### マテリアル
 
 
