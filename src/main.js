@@ -1,11 +1,13 @@
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 async function init() {
     const renderer = new THREE.WebGPURenderer({ antialias: true });
     await renderer.init();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -18,6 +20,11 @@ async function init() {
     dirLight.position.set(5, 10, 5);
     scene.add(dirLight);
 
+    //環境
+    const environment = new RoomEnvironment();
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(environment).texture;
+    pmremGenerator.dispose();
 
     // const geometry = new THREE.BoxGeometry();
     // const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
