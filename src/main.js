@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 async function init() {
     const renderer = new THREE.WebGPURenderer({ antialias: true });
@@ -18,11 +19,15 @@ async function init() {
     scene.add(dirLight);
 
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(0, 1, 0);
-    scene.add(cube);
+    // const geometry = new THREE.BoxGeometry();
+    // const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    // const cube = new THREE.Mesh(geometry, material);
+    // cube.position.set(0, 1, 0);
+    // scene.add(cube);
+    const loader = new GLTFLoader();
+    const gltf = await loader.loadAsync('/public/models/クリスタル本体.glb');
+    gltf.scene.position.set(0, -1, 0);
+    scene.add(gltf.scene);
 
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -30,8 +35,8 @@ async function init() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
     renderer.setAnimationLoop(() => {
-        cube.rotation.x += 0.03;
-        cube.rotation.y += 0.01;
+        gltf.scene.rotation.y += 0.03;
+        // gltf.rotation.y += 0.01;
         renderer.render(scene, camera);
     });
 }
