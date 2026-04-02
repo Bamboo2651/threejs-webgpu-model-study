@@ -47,14 +47,16 @@ async function init() {
     gltf.scene.position.set(0, -1, 0);
 
 
-    const crystalMaterial = new THREE.MeshStandardMaterial({
-        color: 0x88ccff,
-        roughness: 0.1,
-        metalness: 3,
-        transparent: true,
-        opacity: 0.1,
-        emissive: 0x2244ff,
-        emissiveIntensity: 7,
+    const crystalMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x88ccff,        // 薄い青
+        roughness: 0.0,         // ツルツル
+        metalness: 0.0,         // transmission使うときは0推奨
+        transmission: 1.0,      // 完全に光を透過
+        thickness: 1.0,         // 素材の厚み
+        ior: 2.4,               // 屈折率（ダイヤモンド相当）
+        dispersion: 1.0,        // プリズム効果
+        emissive: 0x2244ff,     // 青白く自発光
+        emissiveIntensity: 0.2, // 発光の強さ
     });
 
     gltf.scene.traverse((child) => {
