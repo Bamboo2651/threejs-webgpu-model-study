@@ -20,6 +20,7 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 - [x] MeshStandardMaterial
 - [ ] MeshBasicMaterial
 - [ ] ベイクしたテクスチャの表示
+- [ ] MeshPhysicalMaterial
 
 ### ライティング
 - [ ] AmbientLight
