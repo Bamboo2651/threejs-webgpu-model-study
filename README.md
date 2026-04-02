@@ -13,8 +13,8 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 - [x] WebGLRenderer との違い
 
 ### GLTFLoader
-- [ ] GLBファイルの読み込み
-- [ ] シーンへの追加
+- [x] GLBファイルの読み込み
+- [x] シーンへの追加
 
 ### マテリアル
 - [ ] MeshStandardMaterial
@@ -83,6 +83,30 @@ near と far で描画範囲を絞ることで GPU の負荷を抑えられる�
 広いシーン（湖など）では `far` の値を大きくする必要がある。
 
 ### GLTFLoader
+
+`three/examples/jsm/loaders/GLTFLoader.js` からインポートして使う。
+```js
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+const loader = new GLTFLoader();
+const gltf = await loader.loadAsync('/models/your-model.glb');
+scene.add(gltf.scene);
+```
+
+**`loadAsync` が非同期な理由**
+GLB ファイルはサイズが大きいため、読み込み完了を待たずに次の処理が走ると
+モデルが存在しない状態でレンダリングが始まってしまう。
+`await` で読み込み完了を待つことで確実にモデルが表示される。
+
+**`gltf` と `gltf.scene` の違い**
+`loadAsync()` が返す `gltf` はデータオブジェクトであり、3Dオブジェクトではない。
+回転・移動などの操作や `scene.add()` には `gltf.scene` を使う。
+
+| プロパティ | 内容 |
+|---|---|
+| `gltf.scene` | モデル全体のルートオブジェクト |
+| `gltf.animations` | アニメーションデータ |
+| `gltf.cameras` | カメラデータ |
 
 
 
