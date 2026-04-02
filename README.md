@@ -17,7 +17,7 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 - [x] シーンへの追加
 
 ### マテリアル
-- [ ] MeshStandardMaterial
+- [x] MeshStandardMaterial
 - [ ] MeshBasicMaterial
 - [ ] ベイクしたテクスチャの表示
 
@@ -129,6 +129,45 @@ gltf.scene.rotation.z = -30 * (Math.PI / 180);
 
 ![alt text](image.png)
 ### マテリアル
+
+**MeshStandardMaterial の主要プロパティ**
+物理ベースレンダリング（PBR）に基づいたマテリアル。ライトの影響を受けるリアルな表現ができる。
+
+| プロパティ | 意味 | 値の範囲 |
+|---|---|---|
+| `color` | 基本の色 | 16進数カラー |
+| `roughness` | 表面の粗さ | 0（ツルツル）〜 1（ザラザラ） |
+| `metalness` | 金属っぽさ | 0（非金属）〜 1（金属） |
+| `transparent` | 透明を有効にするフラグ | true / false |
+| `opacity` | 透明度 | 0（透明）〜 1（不透明） |
+| `emissive` | 自発光の色 | 16進数カラー |
+| `emissiveIntensity` | 自発光の強さ | 0〜 |
+
+`transparent: true` にしないと `opacity` が効かない。必ずセットで使う。
+
+**traverse で全メッシュにマテリアルを適用**
+`gltf.scene` の中に複数のメッシュがある場合、`traverse` で全部巡回して適用する。
+```js
+gltf.scene.traverse((child) => {
+    if (child.isMesh) {
+        child.material = crystalMaterial;
+    }
+});
+```
+
+**環境マップ（RoomEnvironment）の追加**
+`MeshStandardMaterial` は周囲の環境を反射する。環境マップがないと反射する対象がなく安っぽく見える。
+`RoomEnvironment` を使うと手軽に環境反射を追加できる。
+```js
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+
+// scene の定義より後に書く
+const environment = new RoomEnvironment();
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+scene.environment = pmremGenerator.fromScene(environment).texture;
+pmremGenerator.dispose();
+```
+
 
 
 ### ライティング
