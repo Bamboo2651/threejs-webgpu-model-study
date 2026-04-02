@@ -108,6 +108,24 @@ GLB ファイルはサイズが大きいため、読み込み完了を待たず�
 | `gltf.animations` | アニメーションデータ |
 | `gltf.cameras` | カメラデータ |
 
+**モデルの操作（position / scale / rotation）**
+`gltf.scene` に対して position・scale・rotation を使って操作できる。
+```js
+// 位置
+gltf.scene.position.set(0, -1, 0);
+
+// 大きさ（set() で呼ぶ、= で代入しない）
+gltf.scene.scale.set(0.2, 0.2, 0.2);
+
+// 傾き（単位はラジアン）
+gltf.scene.rotation.z = -0.5;
+
+// 度数で指定したい場合
+gltf.scene.rotation.z = -30 * (Math.PI / 180);
+```
+
+`scale` や `rotation` は Vector3 オブジェクトなので `= 0.2` のように直接代入できない。
+必ず `scale.set()` か `scale.x = 0.2` のように使う。
 
 
 ### マテリアル
