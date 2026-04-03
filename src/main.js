@@ -70,8 +70,8 @@ async function init() {
     metalness: 0.0,
     transmission: 1.0,  // 完全透過
     thickness: 2.0,     // 素材の厚み
-    ior: 1.3,           // ガラスの屈折率
-    dispersion: 3.0,    // プリズム効果なし
+    ior: 1.25,           // ガラスの屈折率
+    dispersion: 1.5,    // プリズム効果なし
     });
     // crystalMaterial.colorNode = gradientColor;
 
