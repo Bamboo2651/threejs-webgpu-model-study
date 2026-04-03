@@ -37,6 +37,23 @@ async function init() {
     scene.environment = hdrTexture;
 
 
+    //地面
+    const floorGeometry = new THREE.PlaneGeometry(20, 10);
+    const floorMaterial = new THREE.MeshStandardMaterial({
+        color: 0x000000,
+        roughness: 0.0,
+        metalness: 0.0,
+        side: THREE.DoubleSide, // 両面描画
+    });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    const wall = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -90 * (Math.PI / 180);
+    floor.position.set(0, -1.25, 0);
+    wall.position.set(0, 2, -6);
+    wall.rotation.x = -0 * (Math.PI / 180);
+    scene.add(floor,wall);
+
+
 
     // const geometry = new THREE.BoxGeometry();
     // const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
