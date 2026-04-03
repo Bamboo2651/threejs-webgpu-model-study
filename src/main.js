@@ -25,7 +25,7 @@ async function init() {
     // 床
     const floorGeometry = new THREE.PlaneGeometry(10, 10);
     const floorMaterial = new THREE.MeshStandardMaterial({
-        color: 0x000000,
+        color: new THREE.Color('#000000'),
         roughness: 0.05,
         metalness: 0.9,
     });
@@ -36,7 +36,7 @@ async function init() {
 
     // マテリアル
     const crystalMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
+        color: new THREE.Color('#ffffff'),
         roughness: 0.0,
         metalness: 0.0,
         transmission: 1.0,
