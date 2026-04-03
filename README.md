@@ -24,8 +24,8 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 - [x] TSL グラデーション
 
 ### ライティング
-- [ ] AmbientLight
-- [ ] DirectionalLight
+- [x] AmbientLight
+- [x] DirectionalLight
 - [ ] PointLight / SpotLight
 
 ### シャドウ
@@ -246,6 +246,72 @@ const gradientColor = mix(bottomColor, topColor, positionLocal.y.add(1).div(2));
 ![alt text](image-3.png)
 ### ライティング
 
+**toneMapping について**
+リアルな明暗表現のために設定する。`ACESFilmicToneMapping` が映画的な色調で自然に見える。
+```js
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 0.5  // 明るさ（1.0が基準）
+```
+
+**DirectionalLight と太陽の同期**
+`DirectionalLight` の position を `sun` と同じ方向に設定することで、空の太陽と光の方向が一致する。
+`multiplyScalar(100)` で太陽の方向ベクトルを遠くに配置している。
+```js
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.0)
+scene.add(dirLight)
+
+// updateSun() の中で同期
+dirLight.position.copy(sun).multiplyScalar(100)
+```
+
+**updateSun の仕組み**
+太陽の位置・空・水面・ライト・環境マップを一括で更新する関数。
+`renderer.init().then()` の中で呼ぶことで WebGPU 初期化後に実行される。
+```js
+function updateSun() {
+    const phi = THREE.MathUtils.degToRad(90 - 2)  // 太陽の高さ（小さいほど地平線に近い）
+    const theta = THREE.MathUtils.degToRad(180)    // 太陽の水平角度
+
+    sun.setFromSphericalCoords(1, phi, theta)
+
+    sky.sunPosition.value.copy(sun)               // 空に反映
+    water.sunDirection.value.copy(sun).normalize() // 水面に反映
+    dirLight.position.copy(sun).multiplyScalar(100) // ライトに反映
+
+    sceneEnv.add(sky)
+    renderTarget = pmremGenerator.fromScene(sceneEnv)
+    scene.environment = renderTarget.texture       // 環境マップに反映
+}
+```
+
+**SkyMesh の設定パラメータ**
+
+| パラメータ | 意味 |
+|---|---|
+| `turbidity` | 大気の濁り・霞（2〜20が自然） |
+| `rayleigh` | 空の青さ・夕焼けの赤み |
+| `mieCoefficient` | 太陽周りの光の広がり |
+| `mieDirectionalG` | 太陽の光の集中度（0〜1） |
+
+夕焼けにするには `elevation` を低く（2°前後）、`rayleigh` を高く（3〜4）するとよい。
+
+**WaterMesh の設定**
+WebGPU 専用の水面シェーダー。`waternormals.jpg` が必要（Three.js の GitHub から入手）。
+```js
+const water = new WaterMesh(waterGeometry, {
+    waterNormals: waterNormals,   // 波の法線マップ
+    sunDirection: new THREE.Vector3(),
+    sunColor: 0xffffff,
+    waterColor: 0x001e0f,         // 水の色
+    distortionScale: 3.7,         // 波の大きさ
+})
+water.time = 0  // 必ず初期化する（しないと NaN になる）
+
+// アニメーションループで更新
+water.time += 0.1 / 60.0  // 数値を大きくすると波が速くなる
+```
+
+![alt text](image-4.png)
 
 ### シャドウ
 
