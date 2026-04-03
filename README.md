@@ -20,7 +20,7 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 - [x] MeshStandardMaterial
 - [ ] MeshBasicMaterial
 - [ ] ベイクしたテクスチャの表示
-- [ ] MeshPhysicalMaterial
+- [x] MeshPhysicalMaterial
 
 ### ライティング
 - [ ] AmbientLight
@@ -170,7 +170,46 @@ pmremGenerator.dispose();
 ```
 ![alt text](image-1.png)
 
+**MeshPhysicalMaterial（ガラス・クリスタル表現）**
+`MeshStandardMaterial` の上位版。ガラス・水・宝石のような表現に特化したプロパティが追加されている。
+`transmission` を使うと光が素材を本当に通り抜けるような表現になる。
 
+| プロパティ | 意味 | 値の範囲 |
+|---|---|---|
+| `transmission` | 光の透過（ガラスっぽさ） | 0〜1 |
+| `thickness` | 素材の厚み | 0〜 |
+| `ior` | 屈折率 | 1〜2.5（ガラス1.5 / ダイヤ2.4） |
+| `dispersion` | 光の分散（プリズム効果） | 0〜 |
+
+`transmission` を使うときは `metalness` を `0` にする。金属は光を透過しないので両方上げると物理的におかしくなる。
+```js
+const crystalMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x88ccff,
+    roughness: 0.0,
+    metalness: 0.0,
+    transmission: 1.0,
+    thickness: 1.0,
+    ior: 2.4,
+    dispersion: 1.0,
+    emissive: 0x2244ff,
+    emissiveIntensity: 0.2,
+});
+```
+
+**HDR背景の設定（HDRLoader）**
+HDR画像を背景と環境マップの両方に設定することで、クリスタルがHDRの景色を反射・屈折するようになる。
+HDR素材は [Poly Haven](https://polyhaven.com/hdris) で無料入手できる。
+```js
+import { HDRLoader } from 'three/examples/jsm/Addons.js';
+
+const hdrLoader = new HDRLoader();
+const hdrTexture = await hdrLoader.loadAsync('/your-file.hdr');
+hdrTexture.mapping = THREE.EquirectangularReflectionMapping; // 全天球画像として正しく展開
+scene.background = hdrTexture;   // 背景として表示
+scene.environment = hdrTexture;  // 反射・屈折の対象にもなる
+```
+
+`scene.background` と `scene.environment` の両方に設定するのが重要。片方だけだとクリスタルが綺麗に見えない。
 
 ### ライティング
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { HDRLoader, RGBELoader } from 'three/examples/jsm/Addons.js';
 
 async function init() {
     const renderer = new THREE.WebGPURenderer({ antialias: true });
@@ -25,6 +26,15 @@ async function init() {
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     scene.environment = pmremGenerator.fromScene(environment).texture;
     pmremGenerator.dispose();
+
+    //hdr背景
+    const hdrLoader = new HDRLoader();
+    const hdrTexture = await hdrLoader.loadAsync('/public/grasslands_sunset_4k.hdr');
+    hdrTexture.mapping = THREE.EquirectangularRefractionMapping;
+    scene.background = hdrTexture;
+    scene.environment = hdrTexture;
+
+
 
     // const geometry = new THREE.BoxGeometry();
     // const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
@@ -52,7 +62,7 @@ async function init() {
         roughness: 0.0,         // ツルツル
         metalness: 0.0,         // transmission使うときは0推奨
         transmission: 1.0,      // 完全に光を透過
-        thickness: 1.0,         // 素材の厚み
+        thickness: 100.0,         // 素材の厚み
         ior: 2.4,               // 屈折率（ダイヤモンド相当）
         dispersion: 1.0,        // プリズム効果
         emissive: 0x2244ff,     // 青白く自発光
