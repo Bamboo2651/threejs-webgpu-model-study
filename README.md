@@ -21,6 +21,7 @@ Blenderで作成した3Dモデルを WebGPU レンダラーでできる限りき
 - [ ] MeshBasicMaterial
 - [ ] ベイクしたテクスチャの表示
 - [x] MeshPhysicalMaterial
+- [x] TSL グラデーション
 
 ### ライティング
 - [ ] AmbientLight
@@ -212,6 +213,37 @@ scene.environment = hdrTexture;  // 反射・屈折の対象にもなる
 `scene.background` と `scene.environment` の両方に設定するのが重要。片方だけだとクリスタルが綺麗に見えない。
 ![alt text](image-2.png)
 
+**TSL（Three.js Shading Language）でグラデーション**
+TSL は WebGPU 時代の Three.js 専用シェーダー記法。従来の GLSL と違い、JavaScript の中に直接書ける。
+```js
+import { mix, color, positionLocal } from 'three/tsl';
+```
+
+| 関数・変数 | 意味 |
+|---|---|
+| `color()` | 色を定義する |
+| `positionLocal` | 頂点のローカル座標 |
+| `mix(a, b, t)` | a と b を t（0〜1）で補間する。0なら a、1なら b |
+
+**colorNode について**
+`MeshPhysicalMaterial` の `color` プロパティは単色しか設定できない。
+グラデーションなど動的な色を設定するには `colorNode` にTSLノードを渡す。
+```js
+crystalMaterial.colorNode = gradientColor;
+```
+
+**Y座標の正規化**
+`mix` の3つ目の引数は 0〜1 の範囲である必要がある。
+モデルのY座標は -1〜1 など様々なので、0〜1 に正規化してから渡す。
+```js
+const gradientColor = mix(bottomColor, topColor, positionLocal.y.add(1).div(2));
+
+// positionLocal.y      → Y座標（例：-1〜1）
+// .add(1)              → +1 して 0〜2 にする
+// .div(2)              → ÷2 して 0〜1 にする
+```
+
+![alt text](image-3.png)
 ### ライティング
 
 
