@@ -31,6 +31,7 @@ async function init() {
     //hdr背景
     const hdrLoader = new HDRLoader();
     const hdrTexture = await hdrLoader.loadAsync('/public/grasslands_sunset_4k.hdr');
+    // const hdrTexture = await hdrLoader.loadAsync('/public/qwantani_moonrise_puresky_4k.hdr');
     hdrTexture.mapping = THREE.EquirectangularRefractionMapping;
     scene.background = hdrTexture;
     scene.environment = hdrTexture;
@@ -64,17 +65,15 @@ async function init() {
 
     const gradientColor = mix(bottomColor, topColor, positionLocal.y.add(2).div(2));
     const crystalMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0x88ccff,        // 薄い青
-        roughness: 0.0,         // ツルツル
-        metalness: 0.0,         // transmission使うときは0推奨
-        transmission: 1.0,      // 完全に光を透過
-        thickness: 100.0,         // 素材の厚み
-        ior: 2.4,               // 屈折率（ダイヤモンド相当）
-        dispersion: 1.0,        // プリズム効果
-        emissive: 0x2244ff,     // 青白く自発光
-        emissiveIntensity: 0.2, // 発光の強さ
+    color: 0xffffff,    // 白（色をつけない）
+    roughness: 0.0,     // ツルツル
+    metalness: 0.0,
+    transmission: 1.0,  // 完全透過
+    thickness: 2.0,     // 素材の厚み
+    ior: 1.3,           // ガラスの屈折率
+    dispersion: 3.0,    // プリズム効果なし
     });
-    crystalMaterial.colorNode = gradientColor;
+    // crystalMaterial.colorNode = gradientColor;
 
 
     gltf.scene.traverse((child) => {
@@ -90,7 +89,7 @@ async function init() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
     renderer.setAnimationLoop(() => {
-        gltf.scene.rotation.y += 0.02;
+        // gltf.scene.rotation.y += 0.02;
         // gltf2.scene.rotation.y += 0.01;
         // gltf2.scene.rotation.z += 0.01;
         // gltf.rotation.y += 0.01;
