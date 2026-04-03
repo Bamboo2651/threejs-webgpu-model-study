@@ -57,7 +57,12 @@ async function init() {
     // gltf3.scene.rotation.z = 0.5;
     gltf.scene.position.set(0, -1, 0);
 
+    //マテリアル
+    //グラデーション
+    const topColor = color(0x88ccff);
+    const bottomColor = color(0xff88cc);
 
+    const gradientColor = mix(bottomColor, topColor, positionLocal.y.add(2).div(2));
     const crystalMaterial = new THREE.MeshPhysicalMaterial({
         color: 0x88ccff,        // 薄い青
         roughness: 0.0,         // ツルツル
@@ -69,6 +74,8 @@ async function init() {
         emissive: 0x2244ff,     // 青白く自発光
         emissiveIntensity: 0.2, // 発光の強さ
     });
+    crystalMaterial.colorNode = gradientColor;
+
 
     gltf.scene.traverse((child) => {
         if (child.isMesh) {
