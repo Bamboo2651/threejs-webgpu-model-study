@@ -37,24 +37,27 @@ async function init() {
     scene.environment = hdrTexture;
 
 
-    //地面
-    const floorGeometry = new THREE.PlaneGeometry(20, 10);
+
+    // CubeCamera（周囲を撮影するカメラ）
+    const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256);
+    const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRenderTarget);
+    cubeCamera.position.y = -1;
+    scene.add(cubeCamera);
+    // 床
+    const floorGeometry = new THREE.PlaneGeometry(10, 10);
     const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x000000,
         roughness: 0.0,
-        metalness: 0.0,
-        side: THREE.DoubleSide, // 両面描画
+        metalness: 1.0,
+        envMap: cubeRenderTarget.texture, // CubeCameraの映像を反射
     });
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    const wall = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -90 * (Math.PI / 180);
-    floor.position.set(0, -1.25, 0);
-    wall.position.set(0, 2, -6);
-    wall.rotation.x = -0 * (Math.PI / 180);
-    scene.add(floor,wall);
+    floor.position.y = -1;
+    scene.add(floor);
 
 
-
+    //モデルロード
     // const geometry = new THREE.BoxGeometry();
     // const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
     // const cube = new THREE.Mesh(geometry, material);
@@ -82,13 +85,13 @@ async function init() {
 
     const gradientColor = mix(bottomColor, topColor, positionLocal.y.add(2).div(2));
     const crystalMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff,    // 白（色をつけない）
-    roughness: 0.0,     // ツルツル
-    metalness: 0.0,
-    transmission: 1.0,  // 完全透過
-    thickness: 2.0,     // 素材の厚み
-    ior: 1.25,           // ガラスの屈折率
-    dispersion: 1.5,    // プリズム効果なし
+        color: 0xffffff,    // 白（色をつけない）
+        roughness: 0.0,     // ツルツル
+        metalness: 0.0,
+        transmission: 1.0,  // 完全透過
+        thickness: 2.0,     // 素材の厚み
+        ior: 1.25,           // ガラスの屈折率
+        dispersion: 1.5,    // プリズム効果なし
     });
     // crystalMaterial.colorNode = gradientColor;
 
