@@ -1,80 +1,142 @@
-import * as THREE from 'three/webgpu';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { HDRLoader } from 'three/examples/jsm/Addons.js';
-import { mix, color, positionLocal } from 'three/tsl';
+import * as THREE from 'three/webgpu'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { WaterMesh } from 'three/examples/jsm/objects/WaterMesh.js'
+import { SkyMesh } from 'three/examples/jsm/objects/SkyMesh.js'
 
-async function init() {
-    // レンダラー
-    const renderer = new THREE.WebGPURenderer({ antialias: true });
-    await renderer.init();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+// シーン・カメラ・レンダラー
+const scene = new THREE.Scene()
 
-    // シーン・カメラ
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 5);
+const camera = new THREE.PerspectiveCamera(
+    55,
+    window.innerWidth / window.innerHeight,
+    1,
+    20000
+)
+camera.position.set(0, 2., 5)
 
-    // HDR背景・環境マップ
-    const hdrLoader = new HDRLoader();
-    const hdrTexture = await hdrLoader.loadAsync('/public/grasslands_sunset_4k.hdr');
-    hdrTexture.mapping = THREE.EquirectangularRefractionMapping;
-    scene.background = hdrTexture;
-    scene.environment = hdrTexture;
+const renderer = new THREE.WebGPURenderer({ antialias: true })
+renderer.setPixelRatio(window.devicePixelRatio)
+renderer.setSize(window.innerWidth, window.innerHeight)
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 0.5
+document.body.appendChild(renderer.domElement)
 
-    // 床
-    const floorGeometry = new THREE.PlaneGeometry(10, 10);
-    const floorMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#000000'),
-        roughness: 0.05,
-        metalness: 0.9,
-    });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -90 * (Math.PI / 180);
-    floor.position.y = -1;
-    scene.add(floor);
+// コントロール
+const controls = new OrbitControls(camera, renderer.domElement)
+controls.maxPolarAngle = Math.PI * 0.9
+controls.minDistance = 1
+controls.maxDistance = 500
+controls.update()
 
-    // マテリアル
-    const crystalMaterial = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#ffffff'),
-        roughness: 0.0,
-        metalness: 0.0,
-        transmission: 1.0,
-        thickness: 2.0,
-        ior: 1.25,
-        dispersion: 1.5,
-    });
+// 太陽の位置
+const sun = new THREE.Vector3()
 
-    // モデル読み込み
-    const loader = new GLTFLoader();
-    const gltf = await loader.loadAsync('/public/models/クリスタル本体.glb');
-    const gltf2 = await loader.loadAsync('/public/models/クリスタル本体.glb');
-    const gltf3 = await loader.loadAsync('/public/models/クリスタル本体.glb');
+// 空
+const sky = new SkyMesh()
+sky.scale.setScalar(10000)
+scene.add(sky)
 
-    gltf.scene.position.set(0, -1, 0);
-    gltf2.scene.position.set(1, -1, 0);
-    gltf3.scene.position.set(-1, -1, 0);
-    gltf2.scene.scale.set(0.4, 0.4, 0.4);
-    gltf3.scene.scale.set(0.4, 0.4, 0.4);
-    gltf2.scene.rotation.z = -40 * (Math.PI / 180);
-    gltf3.scene.rotation.z = 40 * (Math.PI / 180);
+sky.turbidity.value = 10
+sky.rayleigh.value = 3
+sky.mieCoefficient.value = 0.005
+sky.mieDirectionalG.value = 0.7
+
+// 海面
+const waterGeometry = new THREE.PlaneGeometry(10000, 10000)
+const waterNormals = new THREE.TextureLoader().load('/textures/waternormals.jpg')
+waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping
+
+const water = new WaterMesh(waterGeometry, {
+    waterNormals: waterNormals,
+    sunDirection: new THREE.Vector3(),
+    sunColor: 0xffffff,
+    waterColor: 0x001e0f,
+    distortionScale: 100.2,
+})
+water.rotation.x = -Math.PI / 2
+water.position.y = -0.2
+scene.add(water)
+console.log(water)
+// DirectionalLight（太陽と同期）
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.0)
+scene.add(dirLight)
+
+// クリスタルマテリアル
+const crystalMaterial = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color('#ffffff'),
+    roughness: 0.0,
+    metalness: 0.0,
+    transmission: 1.0,
+    thickness: 2.0,
+    ior: 1.25,
+    dispersion: 1.5,
+})
+
+// モデル読み込み
+const loader = new GLTFLoader()
+const loadModel = async () => {
+    const gltf = await loader.loadAsync('/public/models/クリスタル本体.glb')
+    const gltf2 = await loader.loadAsync('/public/models/クリスタル本体.glb')
+    const gltf3 = await loader.loadAsync('/public/models/クリスタル本体.glb')
+
+    gltf.scene.position.set(0, 0, 0)
+    gltf2.scene.position.set(2, 0, 0)
+    gltf3.scene.position.set(-2, 0, 0)
+    gltf2.scene.scale.set(0.4, 0.4, 0.4)
+    gltf3.scene.scale.set(0.4, 0.4, 0.4)
+    gltf2.scene.rotation.z = -40 * (Math.PI / 180)
+    gltf3.scene.rotation.z = 40 * (Math.PI / 180)
 
     gltf.scene.traverse((child) => {
-        if (child.isMesh) child.material = crystalMaterial;
-    });
+        if (child.isMesh) child.material = crystalMaterial
+    })
 
-    scene.add(gltf.scene, gltf2.scene, gltf3.scene);
-
-    // リサイズ対応
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // アニメーションループ
-    renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
-    });
+    scene.add(gltf.scene, gltf2.scene, gltf3.scene)
 }
-init();
+
+// 太陽の位置を更新する関数
+const pmremGenerator = new THREE.PMREMGenerator(renderer)
+const sceneEnv = new THREE.Scene()
+let renderTarget
+
+function updateSun() {
+    const phi = THREE.MathUtils.degToRad(90 - 2.5)
+    const theta = THREE.MathUtils.degToRad(180)
+
+    sun.setFromSphericalCoords(1, phi, theta)
+
+    sky.sunPosition.value.copy(sun)
+    water.sunDirection.value.copy(sun).normalize()
+
+    // DirectionalLight を太陽と同じ方向に設定
+    dirLight.position.copy(sun).multiplyScalar(100)
+
+    if (renderTarget !== undefined) renderTarget.dispose()
+
+    sceneEnv.add(sky)
+    renderTarget = pmremGenerator.fromScene(sceneEnv)
+    scene.add(sky)
+
+    scene.environment = renderTarget.texture
+}
+
+// WebGPU初期化後に実行
+renderer.init().then(async () => {
+    updateSun()
+    await loadModel()
+})
+
+// アニメーションループ
+renderer.setAnimationLoop(() => {
+    water.time += 0
+    controls.update()
+    renderer.render(scene, camera)
+})
+
+// リサイズ対応
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+})
