@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { HDRLoader, RGBELoader } from 'three/examples/jsm/Addons.js';
+import { mix, color, positionLocal } from 'three/tsl';
 
 async function init() {
     const renderer = new THREE.WebGPURenderer({ antialias: true });
