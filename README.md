@@ -210,6 +210,7 @@ scene.environment = hdrTexture;  // 反射・屈折の対象にもなる
 ```
 
 `scene.background` と `scene.environment` の両方に設定するのが重要。片方だけだとクリスタルが綺麗に見えない。
+![alt text](image-2.png)
 
 ### ライティング
 
